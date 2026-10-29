@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-# Tonefix
+# ToneDaddy
 
 Autocorrect for how your message *sounds*, not just how it's spelled. Tonefix underlines phrases that may land badly
 (blunt, passive-aggressive, vague, overly apologetic), explains why, and offers rewrites in the tone you pick.
@@ -24,7 +23,7 @@ Token savers: 800 ms debounce, 3-word minimum, tiny `max_tokens` for Nano, and a
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env      # add your API key and model IDs
+copy .env.example .env      # add your API key and model IDs
 uvicorn main:app --reload
 ```
 
@@ -41,4 +40,3 @@ with the variables from `.env.example` set as environment variables.
 - `static/index.html` — single-page UI
 =======
 # ToneDaddy
->>>>>>> bbf6ad4d14ed332dbc12fa34a7e3f664123016a7
