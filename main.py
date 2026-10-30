@@ -54,7 +54,7 @@ Use at most 3 issues. Each phrase must be copied exactly from the message. If th
 REWRITE_SYSTEM = """You rewrite messages so they land well while keeping the sender's intent and every fact (names, dates, numbers).
 Reply with ONLY a JSON object, no prose:
 {"options": [{"label": "2-3 word label", "text": "the full rewritten message"}]}
-Give exactly 3 options that differ in approach (for example: softer, more direct, more concise). Keep each close in length to the original. Never add information the sender did not give."""
+Give exactly 3 options that differ in approach (for example: softer, more direct, more concise). Keep each close in length to the original. Never add information the sender did not give. Never use em dashes (—), en dashes (–), or semicolons (;) in your rewrites; use periods or commas instead."""
 
 DEEP_SYSTEM = """You are an expert in workplace and personal communication. Analyse how the message will land, including sarcasm, implied meaning, vagueness and context.
 Reply with ONLY a JSON object, no prose:
@@ -64,7 +64,7 @@ Reply with ONLY a JSON object, no prose:
  "explanation": "1-2 sentences on how the reader is likely to feel and why",
  "issues": [{"phrase": "exact substring copied from the message", "problem": "max 8 words"}],
  "options": [{"label": "2-3 word label", "text": "full rewritten message"}]}
-Give exactly 3 options that keep the sender's intent and every fact. If the message is already fine, return an empty options list."""
+Give exactly 3 options that keep the sender's intent and every fact. If the message is already fine, return an empty options list. Never use em dashes (—), en dashes (–), or semicolons (;) in your rewrites; use periods or commas instead."""
 
 
 class AnalyzeRequest(BaseModel):
@@ -115,13 +115,29 @@ def _clean_issues(issues, text: str) -> list:
     return out[:3]
 
 
+def _sanitize_punctuation(text: str) -> str:
+    # Replace em/en dashes and spaced double-hyphens with a comma
+    text = re.sub(r"\s*(?:—|–|--)\s*", ", ", text)
+    # Replace semicolons with a period and capitalize the next letter
+    text = re.sub(
+        r";\s*([a-zA-Z])",
+        lambda m: f". {m.group(1).upper()}",
+        text,
+    )
+    text = text.replace(";", ".")
+    # Collapse any accidental double commas or comma-periods
+    return re.sub(r",\s*([,.])", r"\1", text)
+
+
 def _clean_options(options) -> list:
     out = []
     for opt in options or []:
-        label, body = str(opt.get("label", "")).strip(), str(opt.get("text", "")).strip()
+        label = str(opt.get("label", "")).strip()
+        body = _sanitize_punctuation(str(opt.get("text", "")).strip())
         if body:
             out.append({"label": label or "Rewrite", "text": body})
     return out[:3]
+
 
 
 def _num(value, default):
@@ -169,7 +185,7 @@ async def analyze(req: AnalyzeRequest):
         result, tokens_total = await run_deep(req, text, tone_desc, steps, tokens_total)
     else:
         # 1) Nano: fast check
-        data, tokens, secs = await call_model(MODEL_NANO, CLASSIFY_SYSTEM, f"Message:\n{text}", 250, 0.1)
+        data, tokens, secs = await call_model(MODEL_NANO, CLASSIFY_SYSTEM, f"Message:\n{text}", 500, 0.1)
         steps.append({"model": "nano", "seconds": secs, "tokens": tokens})
         tokens_total += tokens
         result = {
