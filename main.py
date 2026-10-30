@@ -40,6 +40,7 @@ TONES = {
     "professional": "polite, clear and workplace-appropriate",
     "firm": "direct and confident, but respectful, with no hostility",
     "empathetic": "caring and considerate of the reader's feelings",
+    "casual": "chill, conversational, and texting-friendly with natural everyday phrasing or light internet shorthand, zero corporate stiffness, without forcing cringey slang",
 }
 
 CLASSIFY_SYSTEM = """You are a tone checker for written messages. Judge how the message will LAND with the reader, not its spelling.
@@ -185,7 +186,13 @@ async def analyze(req: AnalyzeRequest):
         result, tokens_total = await run_deep(req, text, tone_desc, steps, tokens_total)
     else:
         # 1) Nano: fast check
-        data, tokens, secs = await call_model(MODEL_NANO, CLASSIFY_SYSTEM, f"Message:\n{text}", 500, 0.1)
+        data, tokens, secs = await call_model(
+            MODEL_NANO,
+            CLASSIFY_SYSTEM,
+            f"Target tone: {tone_desc}\nMessage:\n{text}",
+            500,
+            0.1,
+        )
         steps.append({"model": "nano", "seconds": secs, "tokens": tokens})
         tokens_total += tokens
         result = {
