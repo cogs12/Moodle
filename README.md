@@ -1,4 +1,4 @@
-# ToneDaddy
+# Mood
 
 Autocorrect for how your message *sounds*, not just how it's spelled. Tonefix underlines phrases that may land badly
 (blunt, passive-aggressive, vague, overly apologetic), explains why, and offers rewrites in the tone you pick.
@@ -39,4 +39,4 @@ with the variables from `.env.example` set as environment variables.
 - `main.py` — FastAPI app and the Nano → Super → Ultra router
 - `static/index.html` — single-page UI
 =======
-# ToneDaddy
+# Mood
